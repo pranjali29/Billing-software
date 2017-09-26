@@ -1,0 +1,136 @@
+package com.capgemini.salesmanagement.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Date;
+
+import org.apache.log4j.Logger;
+
+import com.capgemini.salesmanagement.bean.Product;
+import com.capgemini.salesmanagement.exception.ProductException;
+import com.capgemini.salesmanagement.util.DBUtil;
+
+public class ProductDAO implements IProductDAO {
+
+	static Logger myLogger = Logger.getLogger(ProductDAO.class.getName());
+
+	public int generateSalesId() throws ProductException {
+
+		myLogger.debug("Attempting to generate sales id using Sequence sales_id_seq");
+
+		int id = 0;
+
+		try (Connection con = DBUtil.getConnection()) {
+
+			Statement stm = con.createStatement();
+
+			ResultSet res = stm
+					.executeQuery("select sales_id_seq.nextval from dual");
+
+			if (res.next() == false) {
+				throw new ProductException("Failed in generating sales Id");
+			}
+
+			id = res.getInt(1);
+
+			myLogger.debug("Sales id successfully generated");
+
+		} catch (Exception e) {
+
+			myLogger.error("Failed to generate Sales id. raising ProductException");
+			throw new ProductException(e);
+		}
+
+		return id;
+
+	}
+
+	@Override
+	public Product getProductDetails(int productCode) throws ProductException {
+
+		Product product = null;
+
+		try (Connection con = DBUtil.getConnection()) {
+
+			PreparedStatement pstm = con
+					.prepareStatement("select * from product where product_code=?");
+
+			pstm.setInt(1, productCode);
+
+			ResultSet res = pstm.executeQuery();
+
+			if (res.next() == false) {
+				throw new ProductException("No Product found with Product Code: " + productCode);
+			}
+
+			product = new Product();
+
+			// conversion of database row to java object
+
+			product.setCode(res.getInt("product_code"));
+			product.setName(res.getString("product_name"));
+			product.setCategory(res.getString("product_category"));
+			product.setDescription(res.getString("product_description"));
+			product.setPrice(res.getDouble("product_price"));
+
+		} catch (Exception e) {
+
+			throw new ProductException(e);
+		}
+
+		return product;
+
+	}
+
+	@Override
+	public boolean insertSalesDetails(Product product) throws ProductException {
+
+		boolean isValueInserted = false;
+
+		// Variables for sales table
+		int salesId = 0;
+		int productCode;
+		int quantity;
+		Date salesDate;
+		double lineTotal;
+
+		try (Connection con = DBUtil.getConnection()) {
+
+			myLogger.debug("Trying to Add Sales Information To database table sales");
+
+			salesId = generateSalesId();
+
+			myLogger.debug("Generated Sales ID successfully");
+
+			productCode = product.getCode();
+			quantity = product.getQuantity();
+			salesDate = new Date();
+			lineTotal = product.getPrice() * quantity;
+
+			PreparedStatement pstm = con.prepareStatement("insert into sales values(?,?,?,?,?)");
+
+			pstm.setInt(1, salesId);
+			pstm.setInt(2, productCode);
+			pstm.setInt(3, quantity);
+			pstm.setDate(4, new java.sql.Date(salesDate.getTime()));
+			pstm.setDouble(5, lineTotal);
+
+			myLogger.debug("Attempting to fire insert query on database table sales");
+			pstm.execute();
+			myLogger.debug("Firing to insert query on database table sales Successful");
+			isValueInserted = true;
+
+		} 
+		catch (Exception e) 
+		{
+
+			myLogger.debug("Adding SALES Details to Database failed. Reason: "+ e.getMessage());
+			throw new ProductException(e);
+		}
+
+		return isValueInserted;
+	}
+
+}
