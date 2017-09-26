@@ -1,0 +1,50 @@
+package com.capgemini.salesmanagement.test;
+
+import static org.junit.Assert.*;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+
+
+
+import com.capgemini.salesmanagement.bean.Product;
+import com.capgemini.salesmanagement.exception.ProductException;
+import com.capgemini.salesmanagement.service.IProductService;
+import com.capgemini.salesmanagement.service.ProductSeriveImpl;
+
+public class TestgetProductDetails {
+	
+	static IProductService productService=null;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		productService = new ProductSeriveImpl();
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+		productService = null;
+	}
+
+	@Test
+	public void testGetProductDetails() {
+		
+		Product expectedProduct = new Product(1004,"Pencil","Stationary","A pack of 12 pencils",80);
+		Product obtainedProduct = null;
+		try {
+			 obtainedProduct = productService.getProductDetails(1004);
+		} catch (ProductException e) {
+			// TODO Auto-generated catch block
+			System.out.println(e.getMessage());
+		}
+		
+		assertEquals(expectedProduct, obtainedProduct);
+	
+	}
+	
+	
+	
+
+}
