@@ -1,0 +1,12 @@
+package com.capgemini.salesmanagement.service;
+
+import com.capgemini.salesmanagement.bean.Product;
+import com.capgemini.salesmanagement.exception.ProductException;
+
+public interface IProductService {
+
+	public Product getProductDetails(int productCode) throws ProductException;
+
+	public boolean insertSalesDetails(Product product) throws ProductException;
+
+}
