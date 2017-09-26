@@ -1,0 +1,34 @@
+package com.capgemini.salesmanagement.service;
+
+import com.capgemini.salesmanagement.bean.Product;
+import com.capgemini.salesmanagement.dao.IProductDAO;
+import com.capgemini.salesmanagement.dao.ProductDAO;
+import com.capgemini.salesmanagement.exception.ProductException;
+
+public class ProductSeriveImpl implements IProductService {
+
+	private IProductDAO productDAO;
+
+	public ProductSeriveImpl() {
+
+		productDAO = new ProductDAO();
+
+	}
+
+	@Override
+	public Product getProductDetails(int productCode) throws ProductException {
+
+		return productDAO.getProductDetails(productCode);
+	}
+
+	@Override
+	public boolean insertSalesDetails(Product product) throws ProductException {
+
+		boolean isValueInserted = false;
+
+		isValueInserted = productDAO.insertSalesDetails(product);
+
+		return isValueInserted;
+	}
+
+}
