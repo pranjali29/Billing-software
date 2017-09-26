@@ -1,0 +1,89 @@
+package com.capgemini.salesmanagement.ui;
+
+import java.util.Scanner;
+
+import org.apache.log4j.PropertyConfigurator;
+
+import com.capgemini.salesmanagement.bean.Product;
+import com.capgemini.salesmanagement.exception.ProductException;
+import com.capgemini.salesmanagement.service.IProductService;
+import com.capgemini.salesmanagement.service.ProductSeriveImpl;
+import com.capgemini.salesmanagement.util.ValidationUtil;
+
+public class Client {
+
+	private IProductService productService = null;
+
+	public Client() {
+
+		productService = new ProductSeriveImpl();
+
+	}
+
+	public void calculateAndShowBill() {
+
+		Scanner console = new Scanner(System.in);
+
+		int productCode =0;
+		do
+		{
+			System.out.println("Enter the product code: ");
+			productCode = console.nextInt();
+		
+		}while( ValidationUtil.isProductCodeValid(productCode)== false );
+		
+		int quantity =0;
+		do
+		{
+			System.out.println("Enter the quantity: ");
+			quantity = console.nextInt();
+
+		}while( ValidationUtil.isQuantityValid(quantity) == false );
+		
+
+		
+
+		
+		System.out.println();
+		System.out.println();
+
+		Product product = null;
+
+		try {
+			product = productService.getProductDetails(productCode);
+			product.setQuantity(quantity);
+
+			System.out.println("***********BILLING DETAILS**************");
+			System.out.println("Product Name:\t\t" + product.getName());
+			System.out.println("Product Category:\t" + product.getCategory());
+			System.out.println("Product Description:\t"+ product.getDescription());
+			System.out.println("Product Price (Rs): \t" + product.getPrice());
+			System.out.println("Quantity: \t\t\t" + product.getQuantity());
+			System.out.println("Line Total (Rs): \t" + product.getPrice()* product.getQuantity());
+
+			boolean flag = productService.insertSalesDetails(product);
+
+		
+
+		} catch (ProductException e) {
+
+			System.out.println("Something went wrong while trying to retrive product details. Reason: " + e.getMessage());
+		}
+		catch (Exception e) 
+		{
+			System.out.println("Something went wrong. Contact Developer. Shutting down the application");
+			System.exit(1);
+		}
+
+	}
+
+	public static void main(String[] args) {
+
+		PropertyConfigurator.configure("log4j.properties");
+		Client ui = new Client();
+
+		ui.calculateAndShowBill();
+
+	}
+
+}
